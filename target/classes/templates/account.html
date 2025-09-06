@@ -1,0 +1,145 @@
+<!doctype html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Мой аккаунт</title>
+  <style>
+    body {
+        background: #c6e6f7;
+        color: #014469;
+        font-family: Gill Sans;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    #nav {
+        position: fixed;
+        width: 100%;
+        height: 70px;
+        color: #c6e6f7;
+        border-bottom: 5px solid #014469;
+        line-height: 70px;
+        font-size: 15px;
+        background: #0281c4;
+        cursor: pointer;
+        margin: 0;
+        z-index: 100;
+    }
+    #nav a {
+        padding: 0 20px;
+        color: #c6e6f7;
+        text-decoration: none;
+    }
+    #nav a:hover {
+        color: #c6e6f7;
+        background: #014469;
+        border-radius: 5px;
+    }
+    .main-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        padding: 100px 20px 80px;
+    }
+    .account-card {
+        background-color: white;
+        width: 100%;
+        max-width: 600px;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .account-info {
+        margin: 20px 0;
+        text-align: left;
+    }
+    .account-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 15px 0;
+    }
+    .account-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .action-list {
+        margin: 25px 0;
+        text-align: left;
+    }
+    .action-item {
+        margin: 15px 0;
+        padding-left: 20px;
+        position: relative;
+    }
+    .action-item:before {
+        content: "•";
+        color: #0281c4;
+        position: absolute;
+        left: 0;
+    }
+    .btn-primary {
+        background: #0281c4;
+        color: #c6e6f7;
+        border: 2px solid #014469;
+        border-radius: 5px;
+        padding: 10px 25px;
+        cursor: pointer;
+        margin: 20px 0;
+        font-size: 16px;
+    }
+    .btn-primary:hover {
+        background: #014469;
+    }
+    .footer{
+            margin-left: 20px;
+            position: fixed;
+            bottom: 5px;
+        }
+        .footer-blocks{
+            color:#0281c4;
+        }
+  </style>
+</head>
+<body>
+<div id="header">
+  <ul id="nav">
+    <a href="/home">Главная</a>
+    <a href="/todo">To-Do List</a>
+    <a href="/account">Аккаунт</a>
+  </ul>
+</div>
+
+<div class="main-container">
+  <div class="account-card">
+    <h1>Ваш аккаунт</h1>
+
+    <div class="account-info">
+      <h3>Информация о вашем аккаунте:</h3>
+      <ul class="account-list">
+        <li><strong>Имя пользователя:</strong> User123</li>
+        <li><strong>Электронная почта:</strong> user@example.com</li>
+        <li><strong>Дата регистрации:</strong> 15.01.2025</li>
+      </ul>
+    </div>
+
+    <div class="action-list">
+      <h3>Доступные действия:</h3>
+      <div class="action-item">Изменить данные — имя, электронную почту</div>
+      <div class="action-item">Сменить пароль — установить новый пароль</div>
+      <div class="action-item">Настройки — изменить параметры приложения</div>
+    </div>
+
+    <a href="/addTaskFromAccountPage"><button class="btn-primary">Перейти к задачам</button></a>
+
+    <p><em>Благодарим вас за использование нашего сервиса!</em></p>
+  </div>
+</div>
+
+</div>
+<div class="footer">© 2025 To-Do List | <a class="footer-blocks">Политика конфиденциальности</a> | <a class="footer-blocks">Условия использования</a></div>
+</body>
+</body>
+</html>

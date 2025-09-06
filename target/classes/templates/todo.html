@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>To-Do List</title>
+    <style>
+        body {
+            background: #c6e6f7;
+            color: #014469;
+            font-family: Gill Sans;
+            margin: 0;
+            padding: 0;
+        }
+        #nav {
+            position: fixed;
+            width: 100%;
+            height: 70px;
+            color: #c6e6f7;
+            border-bottom: 5px solid #014469;
+            line-height: 70px;
+            font-size: 15px;
+            float: left;
+            background: #0281c4;
+            cursor: pointer;
+            margin: 0;
+        }
+        #nav a {
+            padding: 0 20px;
+            color: #c6e6f7;
+            text-decoration: none;
+        }
+        #nav a:hover {
+            color: #c6e6f7;
+            background: #014469;
+            border-radius: 5px;
+            border-color: #014469;
+        }
+        .calendar-container {
+            padding: 90px 20px 50px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .month-title {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .navigation-buttons button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            background: #014469;
+            color: #c6e6f7;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .navigation-buttons button:hover {
+            background: #0281c4;
+        }
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background: #0281c4;
+            color: #c6e6f7;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px 0;
+            border-radius: 5px 5px 0 0;
+        }
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            background: white;
+            padding: 10px;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .day {
+            padding: 15px 10px;
+            min-height: 80px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .day:hover {
+            background: #e1f0fa;
+            transform: translateY(-2px);
+        }
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .day.today {
+            background: #0281c4;
+            color: #c6e6f7;
+        }
+        .day.today .day-number {
+            font-weight: bold;
+        }
+        .day.other-month {
+            color: #aaa;
+            cursor: default;
+        }
+        .day.other-month:hover {
+            background: white;
+            transform: none;
+        }
+        .day.has-goals:after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #014469;
+            border-radius: 50%;
+        }
+        .tasks-count {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #014469;
+            color: #c6e6f7;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer {
+            margin-left: 20px;
+            position: fixed;
+            bottom: 5px;
+        }
+        .footer-blocks {
+            color: #0281c4;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div id="header">
+    <ul id="nav">
+        <a href="/home">Главная</a>
+        <a href="/todo">To-Do List</a>
+        <a href="/account">Аккаунт</a>
+    </ul>
+</div>
+
+<div class="calendar-container">
+    <div class="calendar-header">
+        <div class="month-title" id="current-month">Август 2025</div>
+        <div class="navigation-buttons">
+            <button id="prev-year">◀◀</button>
+            <button id="prev-month">◀</button>
+            <button id="today">Сегодня</button>
+            <button id="next-month">▶</button>
+            <button id="next-year">▶▶</button>
+        </div>
+    </div>
+
+    <div class="weekdays">
+        <div>Пн</div>
+        <div>Вт</div>
+        <div>Ср</div>
+        <div>Чт</div>
+        <div>Пт</div>
+        <div>Сб</div>
+        <div>Вс</div>
+    </div>
+
+    <div class="days-grid" id="calendar-days"></div>
+</div>
+
+<div class="footer">© 2025 To-Do List | <a class="footer-blocks">Политика конфиденциальности</a> | <a class="footer-blocks">Условия использования</a></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentDate = new Date();
+        let selectedDate = new Date();
+
+        const currentMonthElement = document.getElementById('current-month');
+        const calendarDaysElement = document.getElementById('calendar-days');
+        const prevMonthButton = document.getElementById('prev-month');
+        const nextMonthButton = document.getElementById('next-month');
+        const prevYearButton = document.getElementById('prev-year');
+        const nextYearButton = document.getElementById('next-year');
+        const todayButton = document.getElementById('today');
+
+        function generateDayId(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        async function getTasksCountForDay(dayId) {
+            try {
+                const parts = dayId.split('-');
+                const year = parseInt(parts[0]);
+                const month = parseInt(parts[1]);
+                const day = parseInt(parts[2]);
+
+                const response = await fetch(`/api/tasks/count?year=${year}&month=${month}&day=${day}`);
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    console.error('Ошибка при получении количества задач:', response.status);
+                    return 0;
+                }
+            } catch (error) {
+                console.error('Ошибка при запросе количества задач:', error);
+                return 0;
+            }
+        }
+
+        function navigateToDayTasks(dayId) {
+            window.location.href = `/todo/${dayId}`;
+        }
+
+        async function updateCalendar() {
+            calendarDaysElement.innerHTML = '';
+
+            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                               "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+            currentMonthElement.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const firstDayWeekday = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+            // Добавляем дни предыдущего месяца
+            for (let i = 0; i < firstDayWeekday; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day other-month';
+                const prevMonthLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+                dayElement.innerHTML = `<div class="day-number">${prevMonthLastDay - firstDayWeekday + i + 1}</div>`;
+                calendarDaysElement.appendChild(dayElement);
+            }
+
+            // Создаем массив промисов для асинхронной загрузки данных
+            const tasksPromises = [];
+
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+                const dayId = generateDayId(dayDate);
+
+                // Собираем промисы для получения количества задач
+                tasksPromises.push(getTasksCountForDay(dayId).then(count => {
+                    return { day: i, count: count, date: dayDate, dayId: dayId };
+                }));
+            }
+
+            // Ждем завершения всех запросов
+            const tasksData = await Promise.all(tasksPromises);
+
+            // Создаем объект для быстрого доступа к данным по дню
+            const tasksByDay = {};
+            tasksData.forEach(item => {
+                tasksByDay[item.day] = item;
+            });
+
+            // Создаем дни календаря
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const dayData = tasksByDay[i];
+                const dayDate = dayData.date;
+                const dayId = dayData.dayId;
+                const tasksCount = dayData.count;
+
+                const dayElement = document.createElement('a');
+                dayElement.className = 'day';
+                dayElement.href = 'javascript:void(0);';
+                dayElement.setAttribute('data-day-id', dayId);
+
+                if (dayDate.toDateString() === new Date().toDateString()) {
+                    dayElement.classList.add('today');
+                }
+                if (dayDate.toDateString() === selectedDate.toDateString()) {
+                    dayElement.style.backgroundColor = '#e1f0fa';
+                    dayElement.style.border = '2px solid #014469';
+                }
+
+                let dayContent = `<div class="day-number">${i}</div>`;
+
+                // Добавляем счетчик задач, если они есть
+                if (tasksCount > 0) {
+                    dayContent += `<span class="tasks-count">${tasksCount}</span>`;
+                    dayElement.classList.add('has-goals');
+                }
+
+                dayElement.innerHTML = dayContent;
+
+                // Обработчик клика для перехода к задачам дня
+                dayElement.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const clickedDayId = this.getAttribute('data-day-id');
+                    navigateToDayTasks(clickedDayId);
+                });
+
+                calendarDaysElement.appendChild(dayElement);
+            }
+
+            // Добавляем дни следующего месяца
+            const totalCells = firstDayWeekday + lastDay.getDate();
+            const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+
+            for (let i = 1; i <= remainingCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day other-month';
+                dayElement.innerHTML = `<div class="day-number">${i}</div>`;
+                calendarDaysElement.appendChild(dayElement);
+            }
+        }
+
+        // Обработчики навигации
+        prevMonthButton.addEventListener('click', function() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            updateCalendar();
+        });
+
+        nextMonthButton.addEventListener('click', function() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            updateCalendar();
+        });
+
+        prevYearButton.addEventListener('click', function() {
+            currentDate.setFullYear(currentDate.getFullYear() - 1);
+            updateCalendar();
+        });
+
+        nextYearButton.addEventListener('click', function() {
+            currentDate.setFullYear(currentDate.getFullYear() + 1);
+            updateCalendar();
+        });
+
+        todayButton.addEventListener('click', function() {
+            currentDate = new Date();
+            selectedDate = new Date();
+            updateCalendar();
+        });
+
+        updateCalendar();
+    });
+    async function getTasksCountForDay(dayId) {
+    try {
+        const parts = dayId.split('-');
+        const year = parseInt(parts[0]);
+        const month = parseInt(parts[1]);
+        const day = parseInt(parts[2]);
+
+        const response = await fetch(`/api/tasks/count?year=${year}&month=${month}&day=${day}`);
+
+        if (response.ok) {
+            return await response.json();
+        }
+        return 0;
+    } catch (error) {
+        console.error('Ошибка при запросе количества задач:', error);
+        return 0;
+    }
+}
+</script>
+</body>
+</html>

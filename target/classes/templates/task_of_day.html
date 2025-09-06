@@ -1,0 +1,517 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Управление задачами</title>
+  <style>
+    body {
+        background: #c6e6f7;
+        color: #014469;
+        font-family: Gill Sans;
+        margin: 0;
+        padding: 0;
+    }
+    #nav {
+        position: fixed;
+        width: 100%;
+        height: 70px;
+        color: #c6e6f7;
+        border-bottom: 5px solid #014469;
+        line-height: 70px;
+        font-size: 15px;
+        float: left;
+        background: #0281c4;
+        cursor: pointer;
+        margin: 0;
+        z-index: 1000;
+    }
+    #nav a {
+        padding: 0 20px;
+        color: #c6e6f7;
+        text-decoration: none;
+    }
+    #nav a:hover {
+        color: #c6e6f7;
+        background: #014469;
+        border-radius: 5px;
+    }
+    .tasks-container {
+        padding: 90px 20px 80px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .date-header {
+        background: #0281c4;
+        color: #c6e6f7;
+        padding: 15px 20px;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 0;
+    }
+    .date-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+    }
+    .tasks-content {
+        background: white;
+        padding: 20px;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .task-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border-left: 4px solid #0281c4;
+        transition: all 0.3s ease;
+    }
+    .task-time {
+        font-weight: bold;
+        color: #0281c4;
+        margin-right: 15px;
+        min-width: 60px;
+    }
+    .task-text {
+        flex: 1;
+        font-size: 16px;
+        word-break: break-word;
+    }
+
+    /* Стили для кастомного чекбокса с выравниванием по центру */
+    .checkbox-container {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-right: 15px;
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+    }
+
+    .checkbox-container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+        margin: 0;
+        z-index: 2;
+    }
+
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 25px;
+        height: 25px;
+        background-color: #f8f9fa;
+        border: 2px solid #0281c4;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .checkbox-container:hover input ~ .checkmark {
+        background-color: #e1f0fa;
+        border-color: #014469;
+    }
+
+    .checkbox-container input:checked ~ .checkmark {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .checkmark:after {
+        content: "✓";
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        display: none;
+    }
+
+    .checkbox-container input:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    /* Стиль для выполненной задачи */
+    .completed-task {
+        text-decoration: line-through;
+        color: #6c757d;
+        opacity: 0.7;
+    }
+    .task-item.completed {
+        border-left-color: #28a745;
+        background: #f0fff4;
+    }
+
+    .empty-state {
+        text-align: center;
+        color: #6c757d;
+        padding: 40px;
+        font-style: italic;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    .add-task-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .form-input {
+        padding: 12px;
+        border: 2px solid #0281c4;
+        border-radius: 5px;
+        font-family: Gill Sans;
+        font-size: 16px;
+        flex: 1;
+        min-width: 200px;
+    }
+    .form-button {
+        padding: 12px 20px;
+        background: #014469;
+        color: #c6e6f7;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        white-space: nowrap;
+    }
+    .form-button:hover {
+        background: #0281c4;
+    }
+    .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+    .change-btn {
+        background: #ffc107;
+        color: #014469;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: 10px;
+    }
+    .change-btn:hover {
+        background: #e0a800;
+    }
+    .delete-btn:hover {
+        background: #c82333;
+    }
+    .save-btn {
+        background: #ffc107;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .save-btn:hover {
+        background: #dba604;
+    }
+    .cancel-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: 5px;
+    }
+    .cancel-btn:hover {
+        background: #c82333;
+    }
+    .edit-input {
+        padding: 8px 12px;
+        border: 2px solid #ffc107;
+        border-radius: 4px;
+        font-family: Gill Sans;
+        font-size: 14px;
+        background: #fffaf0;
+    }
+    .edit-time {
+        width: 90px;
+        min-width: 90px;
+    }
+    .edit-text {
+        flex: 1;
+        min-width: 250px;
+        margin: 0 10px;
+    }
+    .edit-input:focus {
+        outline: none;
+        border-color: #ffc107;
+    }
+    .task-editing {
+        background: #fffaf0;
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+        border-left: 4px solid #ffc107;
+    }
+    .view-mode, .edit-mode {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .edit-mode {
+        display: none;
+    }
+    .editing .view-mode {
+        display: none;
+    }
+    .editing .edit-mode {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    .edit-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    .edit-actions {
+        display: flex;
+        gap: 5px;
+        margin-left: 10px;
+    }
+    .footer{
+        margin-left: 20px;
+        position: fixed;
+        bottom: 5px;
+    }
+    .footer-blocks{
+       color:#0281c4;
+    }
+  </style>
+</head>
+<body>
+<div id="header">
+  <ul id="nav">
+    <a href="/home">Главная</a>
+    <a href="/todo">To-Do List</a>
+    <a href="/account">Аккаунт</a>
+  </ul>
+</div>
+
+<div class="tasks-container">
+  <div class="date-header">
+    <h2 class="date-title">Задачи на <span th:text="${formattedDate}">20 августа 2025 года</span></h2>
+  </div>
+
+  <div class="tasks-content">
+    <!-- Отладочная информация -->
+    <div style="background: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+      Найдено задач: <span th:text="${#lists.size(tasks)}">0</span>
+    </div>
+
+    <!-- Отображение всех задач -->
+    <div th:each="task : ${tasks}" class="task-item" th:id="'task-' + ${task.id}"
+         th:classappend="${task.realization} ? 'completed' : ''">
+
+      <!-- Режим просмотра -->
+      <div class="view-mode">
+        <div class="task-time" th:text="${#temporals.format(task.time, 'HH:mm')}">
+          14:30
+        </div>
+
+        <!-- Чекбокс вместо статуса -->
+        <label class="checkbox-container">
+          <input type="checkbox"
+                 th:checked="${task.realization}"
+                 th:attr="data-task-id=${task.id}"
+                 class="task-checkbox"
+                 onchange="toggleTaskStatus(this)">
+          <span class="checkmark"></span>
+        </label>
+
+        <div class="task-text" th:text="${task.task}"
+             th:classappend="${task.realization} ? 'completed-task' : ''">
+          Текст задачи
+        </div>
+
+        <div class="task-actions">
+          <button class="change-btn" th:onclick="'enableEditMode(' + ${task.id} + ')'">
+            ✏️ Изменить
+          </button>
+
+          <form th:action="@{/task_of_day/{dayId}/delete/{id}(dayId=${dayId}, id=${task.id})}"
+                method="post" style="display: inline;">
+            <button type="submit" class="delete-btn"
+                    onclick="return confirm('Удалить эту задачу?')">
+              🗑️ Удалить
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Режим редактирования -->
+      <div class="edit-mode">
+        <form th:action="@{/task_of_day/{dayId}/edit/{id}(dayId=${dayId}, id=${task.id})}"
+              method="post" class="edit-form">
+          <input type="time" name="taskTime" class="edit-input edit-time"
+                 th:value="${#temporals.format(task.time, 'HH:mm')}">
+
+          <input type="text" name="taskText" class="edit-input edit-text"
+                 th:value="${task.task}"
+                 placeholder="Введите описание задачи">
+
+          <div class="edit-actions">
+            <button type="submit" class="save-btn">
+              💾 Сохранить
+            </button>
+            <button type="button" class="cancel-btn"
+                    th:onclick="'disableEditMode(' + ${task.id} + ')'">
+              ✕ Отмена
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Сообщение если нет задач -->
+    <div th:if="${#lists.isEmpty(tasks)}" class="empty-state">
+      <h4>📝 Нет задач на этот день</h4>
+      <p>Добавьте первую задачу используя форму ниже</p>
+    </div>
+
+    <!-- Форма для добавления новой задачи -->
+    <div class="add-task-form">
+      <form th:action="@{/task_of_day/{dayId}/add(dayId=${dayId})}" method="post">
+        <input type="text" name="taskText" class="form-input"
+               placeholder="Введите описание задачи..."
+               required>
+
+        <input type="time" name="taskTime" class="form-input"
+               style="min-width: 120px;"
+               required>
+
+        <button type="submit" class="form-button">
+          Добавить задачу
+        </button>
+      </form>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="/todo" class="form-button" style="display: inline-block; text-decoration: none;">
+        ← Назад к календарю
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  © 2025 To-Do List |
+  <a href="/privacy" class="footer-blocks">Политика конфиденциальности</a> |
+  <a href="/terms" class="footer-blocks">Условия использования</a>
+</div>
+
+<script>
+  // Получаем dayId из URL
+  const dayId = window.location.pathname.split('/').pop();
+
+  document.addEventListener('DOMContentLoaded', function() {
+      const timeInput = document.querySelector('input[name="taskTime"]');
+      if (timeInput && !timeInput.value) {
+          const now = new Date();
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          timeInput.value = `${hours}:${minutes}`;
+      }
+  });
+
+  // Включение режима редактирования
+  function enableEditMode(taskId) {
+      const taskElement = document.getElementById('task-' + taskId);
+      taskElement.classList.add('editing', 'task-editing');
+
+      // Фокус на поле текста
+      const textInput = taskElement.querySelector('input[name="taskText"]');
+      setTimeout(() => {
+          textInput.focus();
+          textInput.select();
+      }, 100);
+  }
+
+  // Отключение режима редактирования
+  function disableEditMode(taskId) {
+      const taskElement = document.getElementById('task-' + taskId);
+      taskElement.classList.remove('editing', 'task-editing');
+  }
+
+  // Функция для переключения статуса задачи
+  async function toggleTaskStatus(checkbox) {
+      const taskId = checkbox.getAttribute('data-task-id');
+      const completed = checkbox.checked;
+
+      try {
+          // Показываем индикатор загрузки
+          checkbox.disabled = true;
+
+          const response = await fetch(`/task_of_day/${dayId}/toggle/${taskId}?completed=${completed}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              }
+          });
+
+          if (response.ok) {
+              // Обновляем внешний вид задачи
+              const taskItem = checkbox.closest('.task-item');
+              const taskText = taskItem.querySelector('.task-text');
+
+              if (completed) {
+                  taskText.classList.add('completed-task');
+                  taskItem.classList.add('completed');
+              } else {
+                  taskText.classList.remove('completed-task');
+                  taskItem.classList.remove('completed');
+              }
+
+              console.log('Статус задачи обновлен');
+          } else {
+              // Возвращаем чекбокс в исходное состояние при ошибке
+              checkbox.checked = !completed;
+              alert('Ошибка при обновлении статуса задачи');
+          }
+
+      } catch (error) {
+          console.error('Ошибка:', error);
+          checkbox.checked = !completed;
+          alert('Ошибка сети при обновлении статуса');
+      } finally {
+          checkbox.disabled = false;
+      }
+  }
+
+  // Обработка Escape для отмены редактирования
+  document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+          const editingTask = document.querySelector('.task-item.editing');
+          if (editingTask) {
+              const taskId = editingTask.id.replace('task-', '');
+              disableEditMode(taskId);
+          }
+      }
+  });
+</script>
+</body>
+</html>
