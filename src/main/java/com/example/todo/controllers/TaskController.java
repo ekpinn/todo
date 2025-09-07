@@ -51,7 +51,6 @@ public class TaskController {
             int month = Integer.parseInt(parts[1]);
             int day = Integer.parseInt(parts[2]);
 
-            // Получаем ВСЕ задачи и фильтруем на уровне Java
             Iterable<TaskTask> allTasksIterable = taskRepository.findAll();
             List<TaskTask> allTasks = new ArrayList<>();
             allTasksIterable.forEach(allTasks::add);
