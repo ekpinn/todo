@@ -245,7 +245,6 @@
             const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
             const firstDayWeekday = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
-            // Добавляем дни предыдущего месяца
             for (let i = 0; i < firstDayWeekday; i++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'day other-month';
@@ -254,29 +253,24 @@
                 calendarDaysElement.appendChild(dayElement);
             }
 
-            // Создаем массив промисов для асинхронной загрузки данных
             const tasksPromises = [];
 
             for (let i = 1; i <= lastDay.getDate(); i++) {
                 const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
                 const dayId = generateDayId(dayDate);
 
-                // Собираем промисы для получения количества задач
                 tasksPromises.push(getTasksCountForDay(dayId).then(count => {
                     return { day: i, count: count, date: dayDate, dayId: dayId };
                 }));
             }
 
-            // Ждем завершения всех запросов
             const tasksData = await Promise.all(tasksPromises);
 
-            // Создаем объект для быстрого доступа к данным по дню
             const tasksByDay = {};
             tasksData.forEach(item => {
                 tasksByDay[item.day] = item;
             });
 
-            // Создаем дни календаря
             for (let i = 1; i <= lastDay.getDate(); i++) {
                 const dayData = tasksByDay[i];
                 const dayDate = dayData.date;
@@ -298,7 +292,6 @@
 
                 let dayContent = `<div class="day-number">${i}</div>`;
 
-                // Добавляем счетчик задач, если они есть
                 if (tasksCount > 0) {
                     dayContent += `<span class="tasks-count">${tasksCount}</span>`;
                     dayElement.classList.add('has-goals');
@@ -306,7 +299,6 @@
 
                 dayElement.innerHTML = dayContent;
 
-                // Обработчик клика для перехода к задачам дня
                 dayElement.addEventListener('click', function(e) {
                     e.preventDefault();
                     const clickedDayId = this.getAttribute('data-day-id');
@@ -316,7 +308,6 @@
                 calendarDaysElement.appendChild(dayElement);
             }
 
-            // Добавляем дни следующего месяца
             const totalCells = firstDayWeekday + lastDay.getDate();
             const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
 
@@ -328,7 +319,6 @@
             }
         }
 
-        // Обработчики навигации
         prevMonthButton.addEventListener('click', function() {
             currentDate.setMonth(currentDate.getMonth() - 1);
             updateCalendar();
