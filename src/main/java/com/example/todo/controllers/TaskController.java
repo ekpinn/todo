@@ -155,7 +155,7 @@ public class TaskController {
                                                    @RequestParam boolean completed) {
         try {
             TaskTask task = taskRepository.findById(id).orElseThrow();
-            task.setRealization(completed); // Используем существующее поле realization
+            task.setRealization(completed);
             taskRepository.save(task);
             return ResponseEntity.ok("Status updated");
         } catch (Exception e) {
