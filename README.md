@@ -38,7 +38,7 @@ project/
 
 
 
-![Главная](images/home.png)
+<img src="images/home.png" alt="Главная страница" width="400"/>
 ![Календарь](images/todo.png)
 ![Задачи дня](images/task_of_day.png)
 ![Аккаунт](images/account.png)
